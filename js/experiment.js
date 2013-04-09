@@ -50,20 +50,20 @@ if (typeof navigator.getUserMedia === "function") {
             for(var i = 0; i < data.length; i += 4) {
                 var r = i, g = i+1, b = i+2, a = i+3;
                 //counter = counter +  (data[g] /( data[r] > 0 ? data[r] : 1 * data[b] > 0 ? data[b] : 1));// + data[b] + data[r];
-                counter = counter + data[r] + data[g] + data[b];
+                counter += data[r] + data[g] + data[b];
             }
             
             x++;
             if (x < 5){
-               average = average + counter;
+               average += counter;
             } else if (x === 5){
                 average = average/5;
                // console.log('start detecting ' + average);
             } else {
                 //start detecting
-                var detect = average - counter;
+                var detect = parseInt(average - counter/100000)
                 console.log(detect);
-                console.log(average);
+                //console.log(average);
                 
                 //if (something) {
                     //code
