@@ -34,8 +34,14 @@ if (typeof navigator.getUserMedia === "function") {
             alert('Uh-oh, the webcam didn\'t start. Do you have a webcam? Did you give it permission? Refresh to try again.');
         }
         
-        var average = 0,
-        x = 0;
+        
+        var x = 0;
+        var prev = 0;
+        var count = 0;
+        var comparevalue = 0;
+        
+        //how long to wait before start recording (in seconds)
+        var startRecording = 5;
         
         function processWebcamVideo() {
             var startTime = +new Date();
@@ -49,33 +55,58 @@ if (typeof navigator.getUserMedia === "function") {
             //and calculate the mean average of RGB colors
             for(var i = 0; i < data.length; i += 4) {
                 var r = i, g = i+1, b = i+2, a = i+3;
-                //counter = counter +  (data[g] /( data[r] > 0 ? data[r] : 1 * data[b] > 0 ? data[b] : 1));// + data[b] + data[r];
                 counter += data[r] + data[g] + data[b];
             }
             
             x++;
-            if (x < 5){
-               average += counter;
-            } else if (x === 5){
-                average = average/5;
-               // console.log('start detecting ' + average);
+            if (x < (startRecording * 1000) / 500 ){
+               //do nothing
             } else {
                 //start detecting
-                var detect = parseInt(average - counter/100000)
-                console.log(detect);
-                //console.log(average);
                 
-                //if (something) {
-                    //code
-                    //tell server
-                //}
+                //we devide by 
+                var detect = parseInt(counter/100000);
+                console.log(detect);
+                if (prev === detect){
+                    count++;
+                }
+                
+                //we will not start detecting befor we get a still image at least 3 times
+                //this to prevent detecting any motion while user still infront
+                //of the screen
+                if (count > 2){
+                    //for every time we get a still page we change compare value
+                    //so we reset the counter to collect comparevalue again
+                    count = 0;
+                    comparevalue = detect;
+                    console.log('START COMPARE WITH THIS '+ comparevalue);
+                }
+                
+                var diff = comparevalue - detect;
+                if (diff < 0) diff = -1*diff; //convert to positive number
+                
+                //we got a detection
+                if (diff > 2 && comparevalue > 0){
+                    console.log('Motion Detected');
+                    drawimage();
+                }
+                
+                prev = detect;
             }
             
-            //console.log(counter)
-            //console.log(last+last2);
             //context.putImageData(imageData, 0 ,0 );
             // And repeat.
             setTimeout(processWebcamVideo, 500);
+        }
+        
+        function drawimage (data) {
+            var note = document.querySelector('#msg');
+            note.innerHTML = 'Motion Detected';
+            
+            setTimeout(function(){
+                note.innerHTML = '';
+            },1000);
+            
         }
         
     })();
